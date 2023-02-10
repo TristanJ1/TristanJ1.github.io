@@ -1,0 +1,179 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>D3 World Map</title>
+    <style>
+    path {
+        stroke: white;
+        stroke-width: 0.5px;
+        fill: black;
+    }
+    </style>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/topojson.v2.min.js"></script>
+</head>
+<body>
+
+    <head>
+        <style>
+          h1 {
+            text-align: center;
+            font-size: 36px;
+            margin-top: 50px;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Map of States where Cannabis is legal per Year</h1>
+      </body>
+    
+
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script type="text/javascript">
+
+const width = 1500;
+const height = 600;
+const svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+ 
+const projection = d3.geoAlbersUsa()
+    .translate([width / 2, height / 2]) // translate to center of screen
+    .scale([1000]); // scale things down so see entire US
+ 
+const path = d3.geoPath().projection(projection);
+
+// Load the dataset and formatting variables
+d3.csv("leg.csv", d => {
+  return {
+    State: d.State,
+    Rec: d.Rec,
+    Med: d.Med,
+  }
+}).then(data => {
+  console.log(data)
+  createMap(data);
+})
+
+
+const createMap = (data) => {
+    let year_threshold = 2017;
+
+    let map = d3.json("https://gist.githubusercontent.com/Bradleykingz/3aa5206b6819a3c38b5d73cb814ed470/raw/a476b9098ba0244718b496697c5b350460d32f99/us-states.json")
+        .then(function(uState) {
+            svg.selectAll('path')
+                .data(uState.features)
+                .enter()
+                .append('path')
+                .attr("d", path)
+
+                .style('fill', function (d, i) {
+                let is_legal;
+                for(let i = 0; i < data.length; i++){
+                    if(data[i]["State"] == d.properties.name){
+                        is_legal = data[i]["Med"] < year_threshold;
+                        if(data[i]["Med"] == "")
+                            is_legal = false;
+                        break;
+                    }
+
+                }
+
+                if(is_legal){
+                    return "green";
+                }
+                else{
+                    return "red";
+                }
+
+
+            });
+        });
+
+        let container = d3.select("body").append("div");
+
+        let square_green = container.append("div")
+            .style("width", "100px")
+            .style("height", "50px")
+            .style("margin-left", "50px")
+            .style("margin-top",  "-100px")
+            .style("background-color", "green");
+
+        let text_l1 = container.append("p")
+            .style("margin-left", "160px")
+            .style("margin-top", "-35px")
+            .style("color", "black")
+            .text("Cannabis is Legal");
+
+        let square_red = container.append("div")
+            .style("width", "100px")
+            .style("height", "50px")
+            .style("margin-left", "50px")
+            .style("margin-top",  "-120px")
+            .style("background-color", "red");
+
+        let text_l2 = container.append("p")
+            .style("margin-left", "160px")
+            .style("margin-top", "-35px")
+            .style("color", "black")
+            .text("Cannabis is Illegal");
+
+
+
+    let slider = d3.select("body").append("input")
+        .attr("type", "range")
+        .attr("min", 2000)
+        .attr("max", 2017)
+        .attr("value", 2017)
+        .attr("step", 1)
+        .style("width", "400px")
+        .style("height", "10px")
+        .style("transform", "rotate(-90deg)")
+        .style("position", "absolute")
+        .style("left", "1100px")
+        .style("top", "350px")
+        .style("z-index", "1")
+        .on("input", function(){
+            year_threshold = this.value;
+            //console.log(year_threshold);
+            update();
+            
+    });
+
+    let slider_value = d3.select("body").append("p1")
+        .text(year_threshold)
+        .style("margin-left", "1280px")
+        .style("margin-top", "-300px");
+
+    function update() {
+        svg.selectAll('path')
+            .style('fill', function (d, i) {
+                let is_legal;
+                for(let i = 0; i < data.length; i++){
+                    if(data[i]["State"] == d.properties.name){
+                        is_legal = data[i]["Med"] < year_threshold;
+                        if(data[i]["Med"] == "")
+                            is_legal = false;
+                        break;
+                    }
+
+                }
+
+                if(is_legal){
+                    return "green";
+                }
+                else{
+                    return "red";
+                }
+
+            });
+        slider_value.text(year_threshold)
+    }
+
+    
+}
+
+</script>
+</body>
+</html>
