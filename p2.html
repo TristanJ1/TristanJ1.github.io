@@ -19,16 +19,18 @@
           h1 {
             text-align: center;
             font-size: 36px;
-            margin-top: 50px;
+            margin-top: 0px;
           }
         </style>
       </head>
+
+      </style>
       <body>
-        <h1>Map of States where Cannabis is legal per Year</h1>
-        <p> This visualization shows a map of the United States where each State is drawn based on the legality of Cannabis.</p>
-        <p> Each State also has a circle where the radius is proportional to the use of Cannabis for different age ranges. </p>
-        <p> This visualization is for people wanting to shape their opinion about Cannabis legalization with data. </p>
-        <p> We can use the year slider in order to show the data for different years. </p>
+        <h1>Visualization of the effect of legalization of Medecinal Cannabis in the USA</h1>
+        <p style="font-size: smaller; text-align: center;"> This visualization shows a map of the United States where each State has a color based on the legality status of medecinal cannabis and the persentage of consumers.</p>
+        <p style="font-size: smaller; text-align: center;"> This visualization is for people wanting to shape their opinion about cannabis legalization with data. </p>
+        <p style="font-size: smaller; text-align: center;"> This is important as it helps to understand the impact of policies like the legalization of medecinal cannabis on its consumers. </p>
+        <p style="font-size: smaller; text-align: center;"> We can use the year slider in order to show the data for different years and the age ranges boxes to select the age ranges we want to consider. </p>
       </body>
     
 
@@ -37,7 +39,7 @@
 <script type="text/javascript">
 
 const width = 1500;
-const height = 600;
+const height = 540;
 const svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height);
@@ -86,10 +88,9 @@ const createMap = (data1, data2) => {
                 .enter()
                 .append('path')
                 .attr("d", path)
-                .each(function(d) {
-                    let centroid = path.centroid(d);
-                    let size;
-                    for(let i = 0; i < data2.length; i++){
+                .style('fill', function (d, i) {
+                let percentage;
+                for(let i = 0; i < data2.length; i++){
                         if(data2[i]["State"] == d.properties.name){
                             if(data2[i]["Year"] == year_threshold){
                                 let pop12_17 = data2[i]["Pop12_17"];
@@ -99,18 +100,10 @@ const createMap = (data1, data2) => {
                                 let rates18_25 = data2[i]["Rates18_25"];
                                 let rates26plus = data2[i]["Rates26plus"];
                                 let total_pop = pop12_17 + pop18_25 + pop26plus;
-                                size = 50*(rates12_17*pop12_17 + rates18_25*pop18_25 + rates26plus*pop26plus)/total_pop;
+                                percentage = (100/0.5)*(rates12_17*pop12_17 + rates18_25*pop18_25 + rates26plus*pop26plus)/total_pop;
                             }
                         }
                     }
-                    svg.append("circle")
-                        .attr("cx", centroid[0])
-                        .attr("cy", centroid[1])
-                        .attr("r", size)
-                        .style("fill", "black");
-                })
-
-                .style('fill', function (d, i) {
                 let is_legal;
                 for(let i = 0; i < data1.length; i++){
                     if(data1[i]["State"] == d.properties.name){
@@ -123,43 +116,16 @@ const createMap = (data1, data2) => {
                 }
 
                 if(is_legal){
-                    return "green";
+                    return d3.hsl(240, 1, 1-percentage / 100).toString();
                 }
                 else{
-                    return "red";
+                    return d3.hsl(0, 1, 1-percentage / 100).toString();
                 }
 
 
             });
         });
 
-        let container = d3.select("body").append("div");
-
-        let square_green = container.append("div")
-            .style("width", "100px")
-            .style("height", "50px")
-            .style("margin-left", "50px")
-            .style("margin-top",  "-100px")
-            .style("background-color", "green");
-
-        let text_l1 = container.append("p")
-            .style("margin-left", "160px")
-            .style("margin-top", "-35px")
-            .style("color", "black")
-            .text("Cannabis is Legal");
-
-        let square_red = container.append("div")
-            .style("width", "100px")
-            .style("height", "50px")
-            .style("margin-left", "50px")
-            .style("margin-top",  "-120px")
-            .style("background-color", "red");
-
-        let text_l2 = container.append("p")
-            .style("margin-left", "160px")
-            .style("margin-top", "-35px")
-            .style("color", "black")
-            .text("Cannabis is Illegal");
 
 
 
@@ -173,14 +139,14 @@ const createMap = (data1, data2) => {
         .style("height", "10px")
         .style("transform", "rotate(-90deg)")
         .style("position", "absolute")
-        .style("left", "1100px")
-        .style("top", "350px")
+        .style("left", "1050px")
+        .style("top", "470px")
         .style("z-index", "1")
         .on("input", function(){
             year_threshold = this.value;
             sliderText.text(year_threshold);
             //console.log(year_threshold);
-            updateYear();
+            update();
             
     });
 
@@ -188,19 +154,33 @@ const createMap = (data1, data2) => {
         .style("width", "50px")
         .style("height", "30px")
         .style("position", "absolute")
-        .style("left", "1275px")
-        .style("top", "120px")
+        .style("left", "1228px")
+        .style("top", "230px")
         .style("z-index", "2")
         .style("text-align", "center")
         .style("font-size", "20px")
         .text(year_threshold);
 
+    let boxesText = d3.select("body").append("div")
+        .style("width", "200px")
+        .style("height", "30px")
+        .style("position", "absolute")
+        .style("left", "1295px")
+        .style("top", "430px")
+        .style("z-index", "2")
+        .style("text-align", "center")
+        .style("font-size", "15px")
+        .text("Select the age range considered:");
+
+    boxleft = "1370px"
+    boxtop = 460
+
     d3.select("body").append("label1")
         .style("position", "absolute")
-        .style("left", "1200px")
-        .style("top", "600px")
+        .style("left", boxleft)
+        .style("top", boxtop + 0 + "px")
         .on("click", function() {
-            updateCircle(checkbox1.checked, checkbox2.checked, checkbox3.checked);
+            update();
         })
         .insert("input", ":first-child")
         .attr("type", "checkbox")
@@ -210,16 +190,16 @@ const createMap = (data1, data2) => {
         .style("margin-right", "5px");
     
     d3.select("body").select("label1").append("text")
-        .text("Age_12_17")
+        .text("12-17")
         .style("float", "left");
         
 
     d3.select("body").append("label2")
     .style("position", "absolute")
-    .style("left", "1200px")
-    .style("top", "620px")
+    .style("left", boxleft)
+    .style("top", boxtop + 20 + "px")
     .on("click", function() {
-        updateCircle(checkbox1.checked, checkbox2.checked, checkbox3.checked);
+        update();
     })
     .insert("input", ":first-child")
     .attr("type", "checkbox")
@@ -229,15 +209,15 @@ const createMap = (data1, data2) => {
     .style("margin-right", "5px");
 
     d3.select("body").select("label2").append("text")
-    .text("Age_18_25")
+    .text("18-25")
     .style("float", "left");
 
     d3.select("body").append("label3")
     .style("position", "absolute")
-    .style("left", "1200px")
-    .style("top", "640px")
+    .style("left", boxleft)
+    .style("top", boxtop + 40 + "px")
     .on("click", function() {
-        updateCircle(checkbox1.checked, checkbox2.checked, checkbox3.checked);
+        update();
     })
     .insert("input", ":first-child")
     .attr("type", "checkbox")
@@ -247,37 +227,133 @@ const createMap = (data1, data2) => {
     .style("margin-right", "5px");
 
     d3.select("body").select("label3").append("text")
-    .text("Age_26_plus")
+    .text("26+")
     .style("float", "left");
-    
 
-    function updateYear() {
-        svg.selectAll("circle").remove();
+    const gradientColorsBlue = [
+  "rgb(255, 255, 255)",
+  "rgb(0, 0, 255)",
+  "rgb(0, 0, 50)"
+];
+
+// Create a linear gradient
+const defs = svg.append("defs");
+const gradientBlue = defs.append("linearGradient")
+  .attr("id", "gradientBlue")
+  .attr("x1", "0%")
+  .attr("y1", "0%")
+  .attr("x2", "0%")
+  .attr("y2", "100%");
+
+// Define the gradient stops
+gradientBlue.selectAll("stop")
+  .data(gradientColorsBlue)
+  .enter()
+  .append("stop")
+  .attr("offset", (d,i) => i/(gradientColorsBlue.length-1))
+  .attr("stop-color", (d) => d);
+
+// Create a rectangle to show the gradient
+svg.append("rect")
+  .attr("x", 100)
+  .attr("y", 50)
+  .attr("width", 20)    
+  .attr("height", 350)
+  .style("fill", "url(#gradientBlue)");
+
+  const gradientColorsRed = [
+  "rgb(255, 255, 255)",
+  "rgb(255, 0, 0)",
+  "rgb(50, 0, 0)"
+];
+
+// Create a linear gradient
+const gradientRed = defs.append("linearGradient")
+  .attr("id", "gradientRed")
+  .attr("x1", "0%")
+  .attr("y1", "0%")
+  .attr("x2", "0%")
+  .attr("y2", "100%");
+
+// Define the gradient stops
+gradientRed.selectAll("stop")
+  .data(gradientColorsRed)
+  .enter()
+  .append("stop")
+  .attr("offset", (d,i) => i/(gradientColorsRed.length-1))
+  .attr("stop-color", (d) => d);
+
+// Create a rectangle to show the gradient
+svg.append("rect")
+  .attr("x", 200)
+  .attr("y", 50)
+  .attr("width", 20)    
+  .attr("height", 350)
+  .style("fill", "url(#gradientRed)");
+
+
+  const percentage = [0, 10, 20, 30, 40, 50];
+const yPos = d3.scaleLinear().domain([0, 50]).range([50, 400]);
+
+// Add text to show percentage
+svg.selectAll("text")
+  .data(percentage)
+  .enter()
+  .append("text")
+  .attr("x", 160)
+  .attr("y", (d) => yPos(d))
+  .text((d) => d + "%")
+  .attr("font-size", "12px")
+  .attr("text-anchor", "middle");
+
+  svg.append("text")
+  .attr("x", 120)
+  .attr("y", 430)
+  .attr("font-size", "16px")
+  .attr("text-anchor", "middle")
+  .selectAll("tspan")
+  .data(["Percentage of people using", "medicinal cannabis"])
+  .enter()
+  .append("tspan")
+  .text(function(d) { return d; })
+  .attr("x", 155)
+  .attr("dy", function(d,i) { return i*20; });
+
+  // Add "Legal" and "Illegal" boxes
+svg.append("rect")
+  .attr("x", 30)
+  .attr("y", 490)
+  .attr("width", 100)
+  .attr("height", 40)
+  .style("fill", "blue");
+
+svg.append("text")
+  .attr("x", 80)
+  .attr("y", 515)
+  .text("Legal")
+  .attr("font-size", "18px")
+  .attr("text-anchor", "middle");
+
+svg.append("rect")
+  .attr("x", 180)
+  .attr("y", 490)
+  .attr("width", 100)
+  .attr("height", 40)
+  .style("fill", "red");
+
+svg.append("text")
+  .attr("x", 230)
+  .attr("y", 515)
+  .text("Illegal")
+  .attr("font-size", "18px")
+  .attr("text-anchor", "middle");
+
+    function update() {
+        console.log("test")
         svg.selectAll('path')
-            .style('fill', function (d, i) {
-                let is_legal;
-                for(let i = 0; i < data1.length; i++){
-                    if(data1[i]["State"] == d.properties.name){
-                        is_legal = data1[i]["Med"] < year_threshold;
-                        if(data1[i]["Med"] == "")
-                            is_legal = false;
-                        break;
-                    }
-
-                }
-
-                if(is_legal){
-                    return "green";
-                }
-                else{
-                    return "red";
-                }
-
-            })
-            .each(function(d) {
-                    let centroid = path.centroid(d);
-                    let size;
-                    for(let i = 0; i < data2.length; i++){
+        .style('fill', function (d, i) {
+                let percentage;
+                for(let i = 0; i < data2.length; i++){
                         if(data2[i]["State"] == d.properties.name){
                             if(data2[i]["Year"] == year_threshold){
                                 let pop12_17 = data2[i]["Pop12_17"];
@@ -287,55 +363,29 @@ const createMap = (data1, data2) => {
                                 let rates18_25 = data2[i]["Rates18_25"];
                                 let rates26plus = data2[i]["Rates26plus"];
                                 let total_pop = checkbox1.checked*pop12_17 + checkbox2.checked*pop18_25 + checkbox3.checked*pop26plus;
-                                if(total_pop == 0){
-                                    total_pop = 1;
-                                }
-                                size = 50*(checkbox1.checked*rates12_17*pop12_17 + checkbox2.checked*rates18_25*pop18_25 + checkbox3.checked*rates26plus*pop26plus)/total_pop;
+                                percentage = (100/0.5)*(checkbox1.checked*rates12_17*pop12_17 + checkbox2.checked*rates18_25*pop18_25 + 
+                                    checkbox3.checked*rates26plus*pop26plus)/total_pop;
                             }
                         }
                     }
-                    svg.append("circle")
-                        .attr("cx", centroid[0])
-                        .attr("cy", centroid[1])
-                        .attr("r", size)
-                        .style("fill", "black");
-                })
+                let is_legal;
+                for(let i = 0; i < data1.length; i++){
+                    if(data1[i]["State"] == d.properties.name){
+                        is_legal = data1[i]["Med"] < year_threshold;
+                        if(data1[i]["Med"] == "")
+                            is_legal = false;
+                        break;
+                    }
+                }
+                if(is_legal){
+                    return d3.hsl(240, 1, 1-percentage / 100).toString();
+                }
+                else{
+                    return d3.hsl(0, 1, 1-percentage / 100).toString();
+                }
+            });
         
-    }
-
-    function updateCircle(box1, box2, box3){
-        console.log(box1, box2, box3)
-        svg.selectAll("circle").remove();
-        svg.selectAll('path')
-        .each(function(d) {
-                    let centroid = path.centroid(d);
-                    let size;
-                    for(let i = 0; i < data2.length; i++){
-                        if(data2[i]["State"] == d.properties.name){
-                            if(data2[i]["Year"] == year_threshold){
-                                let pop12_17 = data2[i]["Pop12_17"];
-                                let pop18_25 = data2[i]["Pop18_25"];
-                                let pop26plus = data2[i]["Pop26plus"];
-                                let rates12_17 = data2[i]["Rates12_17"];
-                                let rates18_25 = data2[i]["Rates18_25"];
-                                let rates26plus = data2[i]["Rates26plus"];
-                                let total_pop = box1*pop12_17 + box2*pop18_25 + box3*pop26plus;
-                                if(total_pop == 0){
-                                    total_pop = 1;
-                                }
-                                size = 50*(box1*rates12_17*pop12_17 + box2*rates18_25*pop18_25 + box3*rates26plus*pop26plus)/total_pop;
-                            }
-                        }
-                    }
-                    svg.append("circle")
-                        .attr("cx", centroid[0])
-                        .attr("cy", centroid[1])
-                        .attr("r", size)
-                        .style("fill", "black");
-                })
-    }
-
-    
+    } 
 }
 
 </script>
